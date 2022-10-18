@@ -17,24 +17,32 @@ public:
 
 	int GetSize() const; // it's the same that is GetUpperBound
 	int GetCapacity() const;
+	T GetAt(int i) const;
 
 	void SetCapacity(int s);
 	void SetGrow(int s); // a function should only perform one specific task. I see no reason to combine this with SetSize()
-	T operator[] (int i);
+	void SetArr(T* begin, T* end);
+	void SetAt(int i, T value);
+
+	T& operator[] (int i);
 
 	bool IsEmpty() const;
 	void FreeExtra();
+	void RemoveAll();
 
 };
 
 int main() {
 	int arr[] = {1, 2, 3 ,4, 5};
 
-	infarr<int> arr1(begin(arr), end(arr));
+	infarr<int> arr1;
+	arr1.SetGrow(2);
+	arr1.SetArr(begin(arr), end(arr));
+	cout << arr1.GetCapacity() << endl;
 	arr1.FreeExtra();
 	cout << arr1.GetCapacity() << endl;
 	cout << arr1.GetSize() << endl;
-
+	arr1[0] = 6;
 	for (int i = 0; i < arr1.GetSize(); i++)
 		cout << arr1[i] << ' ';
 
@@ -53,8 +61,6 @@ infarr<T>::infarr()
 template<class T>
 infarr<T>::infarr(T* begin, T* end)
 {
-	if (arr != nullptr)
-		delete[] arr;
 	size = 0;
 	for (int* ptr = begin; ptr != end; ptr++)
 	{
@@ -118,18 +124,77 @@ void infarr<T>::SetCapacity(int s)
 template<class T>
 void infarr<T>::SetGrow(int s)
 {
-	//I don't know much about the windows.h
-	HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE); //But from what I understand this function extracts a link to the program (here on the console)
-	SetConsoleTextAttribute(window, 4); //And this function changes what will be displayed in window (more accurate, it change color of output)
-	cout << "\n\tError - wrong size\n";
-	SetConsoleTextAttribute(window, 15);
-	//Maybe I misunderstood something, but the main thing is that it works as I want
+	if (s < 0) {
+		//I don't know much about the windows.h
+		HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE); //But from what I understand this function extracts a link to the program (here on the console)
+		SetConsoleTextAttribute(window, 4); //And this function changes what will be displayed in window (more accurate, it change color of output)
+		cout << "\n\tError - wrong size\n";
+		SetConsoleTextAttribute(window, 15);
+		//Maybe I misunderstood something, but the main thing is that it works as I want
+	}
+	else
+		grow = s;
 }
 
 template<class T>
-T infarr<T>::operator[](int i)
+void infarr<T>::SetArr(T* begin, T* end)
 {
-	return arr[i];
+	if (arr != nullptr)
+		delete[] arr;
+	size = 0;
+	for (int* ptr = begin; ptr != end; ptr++)
+	{
+		++size;
+	}
+	while (capacity < size) {
+		if (grow == 0)
+			for (capacity = 1; capacity < size; capacity *= 2);
+		else
+			capacity += grow;
+	}
+	arr = new T[capacity];
+	int i = 0;
+	for (int* ptr = begin; ptr != end; ptr++)
+		arr[i++] = *ptr;
+}
+
+template<class T>
+void infarr<T>::SetAt(int i, T value)
+{
+	if (i < 0 || i > size) {
+		HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(window, 4);
+		cout << "\n\tError - wrong index\n";
+		SetConsoleTextAttribute(window, 15);
+	}
+	else
+		arr[i] = value;
+}
+
+template<class T>
+T infarr<T>::GetAt(int i) const
+{
+	if (i < 0 || i > size) {
+		HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(window, 4);
+		cout << "\n\tError - wrong index\n";
+		SetConsoleTextAttribute(window, 15);
+	}
+	else
+		return arr[i];
+}
+
+template<class T>
+T& infarr<T>::operator[](int i)
+{
+	if (i < 0 || i > size) {
+		HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE);
+		SetConsoleTextAttribute(window, 4);
+		cout << "\n\tError - wrong index\n";
+		SetConsoleTextAttribute(window, 15);
+	}
+	else
+		return arr[i];
 }
 
 template<class T>
@@ -149,4 +214,13 @@ void infarr<T>::FreeExtra()
 	delete[] arr;
 	arr = TempArr;
 	capacity = size;
+}
+
+template<class T>
+void infarr<T>::RemoveAll()
+{
+	delete[] arr;
+	arr = nullptr;
+	size = 0;
+	capacity = 0;
 }
