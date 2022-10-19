@@ -29,14 +29,15 @@ public:
 	bool IsEmpty() const;
 	void FreeExtra();
 	void RemoveAll();
-
+	void Append(infarr obj);
+	void Append(T* begin, T* end);
 };
 
 int main() {
 	int arr[] = {1, 2, 3 ,4, 5};
 
 	infarr<int> arr1;
-	arr1.SetGrow(2);
+	arr1.SetGrow(-1);
 	arr1.SetArr(begin(arr), end(arr));
 	cout << arr1.GetCapacity() << endl;
 	arr1.FreeExtra();
@@ -223,4 +224,28 @@ void infarr<T>::RemoveAll()
 	arr = nullptr;
 	size = 0;
 	capacity = 0;
+}
+
+template<class T>
+void infarr<T>::Append(infarr obj)
+{
+	T* TempArr = new T[size];
+	int OldSize = size;
+	for (int i = 0; i < size; i++)
+		TempArr[i] = arr[i];
+	if (arr != nullptr)
+		delete[] arr;
+	size += obj.size;
+	while (capacity < size) {
+		if (grow == 0)
+			for (capacity = 1; capacity < size; capacity *= 2);
+		else
+			capacity += grow;
+	}
+	arr = new T[capacity];
+	for (int i = 0; i < OldSize; i++)
+		arr[i] = TempArr[i];
+	delete[]TempArr;
+	for (int i = size - OldSize; i < size; i++)
+		arr[i] = obj.arr[i - size];
 }
