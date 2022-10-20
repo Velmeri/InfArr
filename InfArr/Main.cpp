@@ -25,6 +25,7 @@ public:
 	void SetAt(int i, T value);
 
 	T& operator[] (int i);
+	T& operator= (infarr& obj);
 
 	bool IsEmpty() const;
 	void FreeExtra();
@@ -35,9 +36,10 @@ public:
 
 int main() {
 	int arr[] = {1, 2, 3 ,4, 5};
+	int arrr[] = { 6, 7, 8, 9, 10, 11, 12, 13 };
 
 	infarr<int> arr1;
-	arr1.SetGrow(-1);
+	infarr<int> arr2(begin(arr), end(arr));
 	arr1.SetArr(begin(arr), end(arr));
 	cout << arr1.GetCapacity() << endl;
 	arr1.FreeExtra();
@@ -63,7 +65,7 @@ template<class T>
 infarr<T>::infarr(T* begin, T* end)
 {
 	size = 0;
-	for (int* ptr = begin; ptr != end; ptr++)
+	for (T* ptr = begin; ptr != end; ptr++)
 	{
 		++size;
 	}
@@ -75,7 +77,7 @@ infarr<T>::infarr(T* begin, T* end)
 	}
 	arr = new T[capacity];
 	int i = 0;
-	for (int* ptr = begin; ptr != end; ptr++)
+	for (T* ptr = begin; ptr != end; ptr++)
 		arr[i++] = *ptr;
 }
 
@@ -119,6 +121,11 @@ void infarr<T>::SetCapacity(int s)
 	}
 	else {
 		capacity = s;
+		T* TempArr = new T[capacity];
+		for (int i = 0; i < size; i++)
+			TempArr[i] = arr[i];
+		arr = TempArr;
+		delete TempArr;
 	}
 }
 
@@ -188,14 +195,21 @@ T infarr<T>::GetAt(int i) const
 template<class T>
 T& infarr<T>::operator[](int i)
 {
-	if (i < 0 || i > size) {
-		HANDLE window = GetStdHandle(STD_OUTPUT_HANDLE);
-		SetConsoleTextAttribute(window, 4);
-		cout << "\n\tError - wrong index\n";
-		SetConsoleTextAttribute(window, 15);
-	}
-	else
-		return arr[i];
+	return arr[i];
+}
+
+template<class T>
+T& infarr<T>::operator=(infarr& obj)
+{
+	if (arr != nullptr)
+		delete[] arr;
+	capacity = obj.capacity;
+	size = obj.size;
+	arr = new T[capacity];
+		for (int i = 0; i < size; i++)
+			arr[i] = obj.arr[i];
+
+	return *this;
 }
 
 template<class T>
@@ -247,5 +261,32 @@ void infarr<T>::Append(infarr obj)
 		arr[i] = TempArr[i];
 	delete[]TempArr;
 	for (int i = size - OldSize; i < size; i++)
-		arr[i] = obj.arr[i - size];
+		arr[i] = obj.arr[i - OldSize];
+}
+
+template<class T>
+void infarr<T>::Append(T* begin, T* end)
+{
+	int ObjSize = 0;
+	for (T* ptr = begin; ptr != end; ptr++)
+		ObjSize++;
+	T* TempArr = new T[size];
+	int OldSize = size;
+	for (int i = 0; i < size; i++)
+		TempArr[i] = arr[i];
+	if (arr != nullptr)
+		delete[] arr;
+	size += ObjSize;
+	while (capacity < size) {
+		if (grow == 0)
+			for (capacity = 1; capacity < size; capacity *= 2);
+		else
+			capacity += grow;
+	}
+	arr = new T[capacity];
+	for (int i = 0; i < OldSize; i++)
+		arr[i] = TempArr[i];
+	delete[]TempArr;
+	for (int i = size - OldSize; i < size; i++)
+		arr[i] = begin + i - OldSize;
 }
