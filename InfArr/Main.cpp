@@ -32,6 +32,9 @@ public:
 	void RemoveAll();
 	void Append(infarr obj);
 	void Append(T* begin, T* end);
+	T* GetData();
+	void InsertAt(T value);
+	void RemoveAt();
 };
 
 int main() {
@@ -46,8 +49,14 @@ int main() {
 	cout << arr1.GetCapacity() << endl;
 	cout << arr1.GetSize() << endl;
 	arr1[0] = 6;
+	arr1.Append(begin(arrr), end(arrr));
+	arr1.InsertAt(111);
+	arr1.InsertAt(222);
+	arr1.RemoveAt();
+	cout << "\n\t";
 	for (int i = 0; i < arr1.GetSize(); i++)
 		cout << arr1[i] << ' ';
+	cout << "\n\t\t" << arr1.GetData() << endl;
 
 	return 0;
 }
@@ -259,7 +268,6 @@ void infarr<T>::Append(infarr obj)
 	arr = new T[capacity];
 	for (int i = 0; i < OldSize; i++)
 		arr[i] = TempArr[i];
-	delete[]TempArr;
 	for (int i = size - OldSize; i < size; i++)
 		arr[i] = obj.arr[i - OldSize];
 }
@@ -287,6 +295,38 @@ void infarr<T>::Append(T* begin, T* end)
 	for (int i = 0; i < OldSize; i++)
 		arr[i] = TempArr[i];
 	delete[]TempArr;
-	for (int i = size - OldSize; i < size; i++)
-		arr[i] = begin + i - OldSize;
+	cout << OldSize;
+	for (int i = OldSize; i < size; i++)
+		arr[i] = *(begin + i - OldSize);
+}
+
+template<class T>
+T* infarr<T>::GetData()
+{
+	return &arr[0];
+}
+
+template<class T>
+void infarr<T>::InsertAt(T value)
+{
+	size += 1;
+	while (capacity < size) {
+		if (grow == 0)
+			for (capacity = 1; capacity < size; capacity *= 2);
+		else
+			capacity += grow;
+	}
+	T* TempArr = new T[capacity];
+	for (int i = 0; i < size - 1; i++)
+		TempArr[i] = arr[i];
+	TempArr[size - 1] = value;
+	delete[] arr;
+	arr = TempArr;
+}
+
+template<class T>
+void infarr<T>::RemoveAt()
+{
+	size--;
+	arr[size] = 0;
 }
